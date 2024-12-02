@@ -30,7 +30,8 @@ namespace AoC2024
             var sum = 0;
             foreach (var line in input)
             {
-                if (DetermineSafety2(line))
+                List<int> numbers = line.Split(" ").Select(int.Parse).ToList();
+                if (DetermineSafety2(numbers))
                     sum++;
             }
             
@@ -40,7 +41,6 @@ namespace AoC2024
         private static bool DetermineSafety(List<int> numbers, int lower = 1, int upper = 3)
         {
             Direction counterDirection = Direction.Undetermined;
-
             for (int i = 0; i < numbers.Count-1; i++)
             {
                 int difference = Math.Abs(numbers[i] - numbers[i + 1]);
@@ -59,11 +59,9 @@ namespace AoC2024
 
         }
         
-        private static bool DetermineSafety2(string input, int lower = 1, int upper = 3)
+        private static bool DetermineSafety2(List<int> numbers, int lower = 1, int upper = 3)
         {
             Direction counterDirection = Direction.Undetermined;
-            // split string of ints into int list
-            List<int> numbers = input.Split(" ").Select(int.Parse).ToList();
             int i = 0;
             for (i = 0; i < numbers.Count-1; i++)
             {
@@ -81,31 +79,28 @@ namespace AoC2024
 
             if (i < numbers.Count - 1) // Check if unsafe lines can be made Safe
             {
-                List<int> removeFirst;
-                List<int> removeSecond;
 
-                if (i == 1) // If issue detected at second element then test safety with 1st and 2nd removed.
+                if (i <=  1) // If issue detected at first or second element
                 {
-                    removeFirst  = numbers.Where((item, index) => index != 0).ToList();
-                    removeSecond = numbers.Where((item, index) => index != 1).ToList();
+                    var removeFirst  = numbers.Where((item, index) => index != 0).ToList();
+                    var removeSecond = numbers.Where((item, index) => index != 1).ToList();
+                    bool result1 = DetermineSafety(removeFirst);
+                    bool result2 = DetermineSafety(removeSecond);
+                    if (!result1 && !result2)
+                        return false; // Not safe! 
                 }
-                else // Else check safety by removing current element and the one after it.
+                else // Else check safety by removing the problematic element (i + 1)
                 {
-                    removeFirst = numbers.Where((item, index) => index != i).ToList();
-                    removeSecond = numbers.Where((item, index) => index != i + 1).ToList();
+                    var removeElement = numbers.Where((item, index) => index != i + 1).ToList();
+                    bool result1 = DetermineSafety(removeElement);
+                    
+                    // return true or false
+                    return result1;
                 }
-
-                bool result1 = DetermineSafety(removeFirst);
-                bool result2 = DetermineSafety(removeSecond);
-
-                if (!result1 && !result2)
-                    return false; // Not safe! 
 
             }
-            
             // Safe!
             return true;
-
         }
 
         private static Direction DetermineDirection(int a, int b)

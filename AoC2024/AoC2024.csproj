@@ -38,6 +38,13 @@
       <Content Include="Inputs\davesinput.txt">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </Content>
+      <Content Update="Inputs\day2_edgecase2.txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+      <None Remove="Inputs\day2_edgecase2.txt" />
+      <Content Include="Inputs\day2_edgecase2.txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
 
 </Project>
