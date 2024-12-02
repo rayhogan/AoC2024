@@ -19,7 +19,7 @@ namespace AoC2024
             foreach (var line in input)
             {
                 List<int> numbers = line.Split(" ").Select(int.Parse).ToList();
-                if (DetermineSafety(numbers))
+                if (DetermineSafety(numbers).Result)
                     sum++;
             }
             
@@ -38,64 +38,52 @@ namespace AoC2024
             Console.WriteLine("Part II: "+sum);
         }
 
-        private static bool DetermineSafety(List<int> numbers, int lower = 1, int upper = 3)
+        private static DetermineSafetyResult DetermineSafety(List<int> numbers, int lower = 1, int upper = 3)
         {
             Direction counterDirection = Direction.Undetermined;
             for (int i = 0; i < numbers.Count-1; i++)
             {
                 int difference = Math.Abs(numbers[i] - numbers[i + 1]);
                 if (difference < lower || difference > upper)
-                    return false;
+                    return new DetermineSafetyResult(false, i);
 
                 var direction = DetermineDirection(numbers[i], numbers[i + 1]);
 
                 if (counterDirection == Direction.Undetermined)
                     counterDirection = direction;
                 else if (counterDirection != direction)
-                    return false;
+                    return new DetermineSafetyResult(false, i);
             }
 
-            return true;
+            return new DetermineSafetyResult(true, -1);
 
         }
         
         private static bool DetermineSafety2(List<int> numbers, int lower = 1, int upper = 3)
         {
-            Direction counterDirection = Direction.Undetermined;
-            int i = 0;
-            for (i = 0; i < numbers.Count-1; i++)
+            // Check line to see if it's safe or unsafe (before modification)
+            DetermineSafetyResult dsr = DetermineSafety(numbers);
+            
+            if (!dsr.Result) // Found an unsafe line!
             {
-                int difference = Math.Abs(numbers[i] - numbers[i + 1]);
-                if (difference < lower || difference > upper)
-                    break;
-
-                var direction = DetermineDirection(numbers[i], numbers[i + 1]);
-
-                if (counterDirection == Direction.Undetermined)
-                    counterDirection = direction;
-                else if (counterDirection != direction)
-                    break;
-            }
-
-            if (i < numbers.Count - 1) // Check if unsafe lines can be made Safe
-            {
-
+                // Let's see if it can be made safe ...
+                int i = dsr.BadIndex;
                 if (i <=  1) // If issue detected at first or second element
                 {
                     var removeFirst  = numbers.Where((item, index) => index != 0).ToList();
                     var removeSecond = numbers.Where((item, index) => index != 1).ToList();
-                    bool result1 = DetermineSafety(removeFirst);
-                    bool result2 = DetermineSafety(removeSecond);
-                    if (!result1 && !result2)
+                    var result1 = DetermineSafety(removeFirst);
+                    var result2 = DetermineSafety(removeSecond);
+                    if (!result1.Result && !result2.Result)
                         return false; // Not safe! 
                 }
                 else // Else check safety by removing the problematic element (i + 1)
                 {
                     var removeElement = numbers.Where((item, index) => index != i + 1).ToList();
-                    bool result1 = DetermineSafety(removeElement);
+                    var result1 = DetermineSafety(removeElement);
                     
-                    // return true or false
-                    return result1;
+                    // Return it's safety Result
+                    return result1.Result;
                 }
 
             }
@@ -120,6 +108,29 @@ namespace AoC2024
             Undetermined = 0,
             Increasing = 1,
             Decreasing = 2
+        }
+        
+    }
+
+    /// <summary>
+    /// Result class that holds information regarding the safety checks
+    /// done on the collection of Integers.
+    /// </summary>
+    internal class DetermineSafetyResult
+    {
+        /// <summary>
+        /// The Result True/False whether the collections of ints
+        /// are safe or unsafe.
+        /// </summary>
+        public Boolean Result { get; private set; }
+        /// <summary>
+        /// The Index value of the element that failed the safety checks.
+        /// </summary>
+        public int BadIndex { get; private set; }
+        public DetermineSafetyResult(Boolean result, int badIndex)
+        {
+            Result = result;
+            BadIndex = badIndex;
         }
         
     }
