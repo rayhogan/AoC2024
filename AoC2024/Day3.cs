@@ -45,7 +45,7 @@ namespace AoC2024
                     sb.Append(result);
                 }
             }
-            
+             
             // A bit horrible, but now lets split the input by do()
             string[] splitDos = sb.ToString().Split("do()");
             foreach (var line in splitDos)
