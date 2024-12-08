@@ -24,7 +24,7 @@ namespace AoC2024
                 long sum = long.Parse(parts[0]);
                 int[] numbers = parts[1].Trim().Split(' ').Select(int.Parse).ToArray();
 
-                if (CheckEquation1(numbers, sum))
+                if (CheckEquation(numbers, sum))
                     result += sum;
             }
             
@@ -40,53 +40,18 @@ namespace AoC2024
                 long sum = long.Parse(parts[0]);
                 int[] numbers = parts[1].Trim().Split(' ').Select(int.Parse).ToArray();
 
-                if (CheckEquation2(numbers, sum))
+                if (CheckEquation(numbers, sum, 3)) 
                     result += sum;
             }
             
             Console.WriteLine("Part II: "+result);
         }
-        
-        
-        private static bool CheckEquation1(int[] numbers, long targetSum)
+
+        private static bool CheckEquation(int[] numbers, long targetSum, int numOperators = 2)
         {
             int n = numbers.Length;
-            int operatorCombinations = 1 << (n - 1); // 2^(n-1)
+            int operatorCombinations = (int)Math.Pow(numOperators, n - 1);
             bool targetFound = false;
-
-            Parallel.For(0, operatorCombinations, (i, state) =>
-            {
-                if (targetFound) return; // Exit early if the target is already found
-
-                long result = numbers[0];
-
-                for (int j = 0; j < n - 1; j++)
-                {
-                    if ((i & (1 << j)) > 0)
-                    {
-                        result *= numbers[j + 1];
-                    }
-                    else
-                    {
-                        result += numbers[j + 1];
-                    }
-                }
-                if (result == targetSum)
-                {
-                    targetFound = true;
-                    state.Stop(); // Signal to stop all other threads
-                }
-            });
-
-            return targetFound;
-        }
-
-        private static bool CheckEquation2(int[] numbers, long targetSum)
-        {
-            int n = numbers.Length;
-            int operatorCombinations = (int)Math.Pow(3, n - 1); // Total combinations for 3 operators
-            bool targetFound = false;
-            int numOperators = 3;
             Parallel.For(0, operatorCombinations, (i, state) =>
             {
                 if (targetFound) return; 
