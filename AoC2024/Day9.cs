@@ -21,13 +21,15 @@ namespace AoC2024
             // 0..111....22222
             InputParser ip = new InputParser(input[0]);            
             ip.SimpleMemoryFill();
-            Console.WriteLine($"Part I: {ip.CalculateCheckSum()}");
+            Console.WriteLine($"Part I: {ip.CalculateCheckSumSimple()}");
             
         }
 
         private static void Part2(string[] input)
         {
-            
+            InputParser ip = new InputParser(input[0]);
+            ip.ComplexMemoryFill();            
+            Console.WriteLine($"Part II {ip.CalculateCheckSumComplex()}");
         }
 
         
@@ -37,12 +39,17 @@ namespace AoC2024
             public List<int> FreeSpaces { get;  }
             
             public List<(int, int)> FreeSpaceBlocks { get; }
+
+            public List<(int, int, int)> MemoryBlocks { get; }
             
             public InputParser(string input)
             { 
                 MemoryIndex = new List<(int, int)>();
                 FreeSpaces = new List<int>();
+                //(start index, length)
                 FreeSpaceBlocks = new List<(int, int)>();
+                //(value, startIndex, length)
+                MemoryBlocks = new List<(int, int, int)>();
                 
                 var converted = input.Select(c => int.Parse(c.ToString())).ToArray();
                 
@@ -55,15 +62,21 @@ namespace AoC2024
                     // Free space calculator
                     if ((i + 1) % 2 == 0)
                     {
+                        // (start index, length)
+                        FreeSpaceBlocks.Add((index, converted[i]));
                         // Loop through and track free index spaces
                         for (int j = converted[i]; j >= 1; j--)
                         {
                             FreeSpaces.Add(index);
                             index++;
                         }
+                        
                     }
                     else // Everything else
                     {
+                        // 12345
+                        // 0..111....22222
+                        MemoryBlocks.Add((id, index, converted[i]));
                         // Loop through and track our memory usage
                         for (int j = converted[i]; j >= 1; j--)
                         {
@@ -95,19 +108,58 @@ namespace AoC2024
 
             public void ComplexMemoryFill()
             {
-                // Track starting positions of free spaces
-                // as well as memory blocks
-                // Iterate over memory block locations and if there's space
-                // figure out how to update their values
-                // Maybe dictionary of key: ID, value: startindex, count
+                int index = MemoryBlocks.Count - 1;
+
+                // Loop thru and try reallocate file blocks
+                for (int i=index; i >=0; i--)
+                {
+                    var fileBlock = MemoryBlocks[i];
+                    for(int j=0; j<FreeSpaceBlocks.Count; j++)
+                    {
+                        var freeBlock = FreeSpaceBlocks[j];
+
+
+                        if (freeBlock.Item2 > 0 && fileBlock.Item2 > freeBlock.Item1)
+                        {
+                            
+                            if (fileBlock.Item3 <= freeBlock.Item2)
+                            {
+                                // We've identified a file that will fit
+                                // So now we need to update index values to reflect this change
+                                MemoryBlocks[i] = (fileBlock.Item1,freeBlock.Item1, fileBlock.Item3);
+
+                                FreeSpaceBlocks[j] = (freeBlock.Item1+fileBlock.Item3, freeBlock.Item2-fileBlock.Item3);
+                                // successfully moved so let's break out
+                                break;
+                            }
+
+                            
+                        }
+                    }
+                }
+
             }
 
-            public long CalculateCheckSum()
+            public long CalculateCheckSumSimple()
             {
                 long result = 0;
                 foreach (var kvp in MemoryIndex)
                 {
                     result += (kvp.Item1 * kvp.Item2);
+                }
+
+                return result;
+            }
+
+            public long CalculateCheckSumComplex()
+            {
+                long result = 0;
+                foreach (var kvp in MemoryBlocks)
+                {
+                    for (int i = 0; i < kvp.Item3; i++)
+                    {
+                        result += (kvp.Item1 * (kvp.Item2+i));
+                    }
                 }
 
                 return result;

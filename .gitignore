@@ -3,3 +3,6 @@ obj/
 /packages/
 riderModule.iml
 /_ReSharper.Caches/
+/.vs/AoC2024/DesignTimeBuild
+/.vs/AoC2024/FileContentIndex
+/.vs/AoC2024/v17
